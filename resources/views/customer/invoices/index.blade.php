@@ -9,7 +9,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h1 class="text-3xl font-bold text-gray-900">My Invoices</h1>
-                        <p class="mt-2 text-gray-600">View your order invoices and payment status</p>
+                        <p class="mt-2 text-gray-600">View and manage your payment invoices</p>
                     </div>
                     <a href="{{ route('customer.orders.create') }}" 
                        class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-purple-700 hover:to-pink-700">
@@ -41,9 +41,6 @@
                                         Status
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Due Date
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
@@ -66,20 +63,21 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                                 {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-800' : 
-                                                   ($invoice->status === 'issued' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">
+                                                   ($invoice->status === 'partially_paid' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800') }}">
                                                 {{ $invoice->status }}
                                             </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">
-                                                {{ $invoice->due_date ? $invoice->due_date->format('M d, Y') : 'N/A' }}
-                                            </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <a href="{{ route('customer.invoices.show', $invoice) }}" 
                                                class="text-purple-600 hover:text-purple-900">
-                                                View Details
+                                                View
                                             </a>
+                                            @if($invoice->status !== 'paid')
+                                                <a href="{{ route('customer.payments.create', $invoice) }}" 
+                                                   class="ml-3 text-green-600 hover:text-green-900">
+                                                    Pay
+                                                </a>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -120,16 +118,11 @@
                 @else
                     <div class="text-center py-12">
                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         <h3 class="mt-2 text-sm font-medium text-gray-900">No invoices yet</h3>
-                        <p class="mt-1 text-sm text-gray-500">Invoices will be generated when you place orders.</p>
-                        <div class="mt-6">
-                            <a href="{{ route('customer.orders.create') }}" 
-                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
-                                Place Your First Order
-                            </a>
-                        </div>
+                        <p class="mt-1 text-sm text-gray-500">You don't have any invoices at the moment.</p>
+                        
                     </div>
                 @endif
             </div>

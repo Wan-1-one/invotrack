@@ -21,7 +21,7 @@ class InvoiceObserver
             }
             
             if ($invoice->status === 'closed') {
-                $order->update(['status' => 'completed']);
+                $order->update(['status' => 'confirmed']);
             }
         }
 

@@ -17,7 +17,7 @@ class InvoiceController extends Controller
             ->latest()
             ->paginate(10);
         
-        return view('invoices.index', compact('invoices'));
+        return view('invotrack.invoices.index', compact('invoices'));
     }
 
     /**
@@ -26,7 +26,7 @@ class InvoiceController extends Controller
     public function show(Invoice $invoice)
     {
         $invoice->load(['order', 'payments', 'shipment']);
-        return view('invoices.show', compact('invoice'));
+        return view('invotrack.invoices.show', compact('invoice'));
     }
 
     /**

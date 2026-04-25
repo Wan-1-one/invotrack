@@ -68,11 +68,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/shipments', [ShipmentController::class, 'store'])->name('shipments.store');
     Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
     Route::get('/shipments/{shipment}/track', [ShipmentController::class, 'track'])->name('shipments.track');
-    Route::get('/shipments/{shipment}/status', function(\App\Models\Shipment $shipment) {
-        return redirect()->route('admin.shipments.show', $shipment);
-    });
-    Route::put('/shipments/{shipment}/status', [ShipmentController::class, 'updateStatus'])->name('shipments.updateStatus');
+    Route::get('/shipments/{shipment}/timeline', [ShipmentController::class, 'timeline'])->name('shipments.timeline');
+    Route::post('/shipments/{shipment}/status', [ShipmentController::class, 'updateStatus'])->name('shipments.updateStatus');
     Route::post('/shipments/{shipment}/pod', [ShipmentController::class, 'uploadPOD'])->name('shipments.uploadPOD');
+    Route::post('/shipments/{shipment}/arrival', [ShipmentController::class, 'uploadProofOfArrival'])->name('shipments.uploadProofOfArrival');
     
     // Reports & Exports
     Route::get('/reports/financial', [ExportController::class, 'financialSummary'])->name('reports.financial');

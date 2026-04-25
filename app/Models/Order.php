@@ -17,6 +17,13 @@ class Order extends Model
         'customer_phone',
         'customer_address',
         'total_amount',
+        'quantity',
+        'price_per_unit',
+        'name_of_products',
+        'transportation_type',
+        'delivery_destination',
+        'cargo_size',
+        'type_of_goods',
         'notes',
         'status',
     ];

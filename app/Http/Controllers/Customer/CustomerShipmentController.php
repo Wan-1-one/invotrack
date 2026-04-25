@@ -21,7 +21,7 @@ class CustomerShipmentController extends Controller
 
         $shipment->load(['invoice.order', 'invoice.payments']);
 
-        return view('customer.shipments.track', compact('shipment'));
+        return view('invotrack-order.shipments.track', compact('shipment'));
     }
 
     /**
@@ -40,7 +40,7 @@ class CustomerShipmentController extends Controller
             })
             ->sortByDesc('created_at');
 
-        return view('customer.shipments.index', compact('shipments'));
+        return view('invotrack-order.shipments.index', compact('shipments'));
     }
 
     /**
@@ -56,7 +56,7 @@ class CustomerShipmentController extends Controller
         // Create timeline events based on shipment status and dates
         $timeline = $this->generateTimeline($shipment);
 
-        return view('customer.shipments.timeline', compact('shipment', 'timeline'));
+        return view('invotrack-order.shipments.timeline', compact('shipment', 'timeline'));
     }
 
     /**
@@ -66,63 +66,89 @@ class CustomerShipmentController extends Controller
     {
         $timeline = [];
 
-        // Order placed
+        // Booking Confirmed
         $timeline[] = [
-            'title' => 'Order Placed',
-            'description' => 'Your order has been received and is being processed.',
-            'date' => $shipment->invoice->order->created_at,
+            'title' => 'Booking Confirmed',
+            'description' => 'Your transport booking has been confirmed.',
+            'date' => $shipment->created_at,
             'status' => 'completed',
             'icon' => 'shopping-cart'
         ];
 
-        // Invoice generated
-        $timeline[] = [
-            'title' => 'Invoice Generated',
-            'description' => 'Invoice has been generated for your order.',
-            'date' => $shipment->invoice->created_at,
-            'status' => 'completed',
-            'icon' => 'file-invoice'
-        ];
-
-        // Payment confirmed
-        if ($shipment->invoice->paid_date) {
+        // Lorry Assigned
+        if ($shipment->status === 'lorry_assigned' || $shipment->status === 'en_route_to_pickup' || $shipment->status === 'cargo_picked_up' || $shipment->status === 'in_transit_to_port' || $shipment->status === 'arrived_at_port') {
             $timeline[] = [
-                'title' => 'Payment Confirmed',
-                'description' => 'Your payment has been received and confirmed.',
-                'date' => $shipment->invoice->paid_date,
-                'status' => 'completed',
-                'icon' => 'credit-card'
-            ];
-        }
-
-        // Shipment created
-        $timeline[] = [
-            'title' => 'Shipment Created',
-            'description' => 'Your order has been packaged and is ready for shipment.',
-            'date' => $shipment->created_at,
-            'status' => 'completed',
-            'icon' => 'package'
-        ];
-
-        // Shipped
-        if ($shipment->shipped_date) {
-            $timeline[] = [
-                'title' => 'Order Shipped',
-                'description' => "Your order has been shipped via {$shipment->courier_name}.",
-                'date' => $shipment->shipped_date,
+                'title' => 'Lorry Assigned',
+                'description' => 'A lorry has been assigned for your transport.',
+                'date' => $shipment->created_at,
                 'status' => 'completed',
                 'icon' => 'truck'
             ];
         }
 
-        // Delivered
-        if ($shipment->delivered_date) {
+        // Lorry On The Way to Customer (Pickup in progress)
+        if ($shipment->status === 'en_route_to_pickup' || $shipment->status === 'cargo_picked_up' || $shipment->status === 'in_transit_to_port' || $shipment->status === 'arrived_at_port') {
             $timeline[] = [
-                'title' => 'Order Delivered',
-                'description' => 'Your order has been successfully delivered.',
-                'date' => $shipment->delivered_date,
+                'title' => 'Lorry On The Way to You',
+                'description' => 'Lorry is traveling to your location for pickup.',
+                'date' => $shipment->pickup_started_at ?? now(),
+                'status' => 'completed',
+                'icon' => 'truck'
+            ];
+        }
+
+        // Cargo Picked Up
+        if ($shipment->status === 'cargo_picked_up' || $shipment->status === 'in_transit_to_port' || $shipment->status === 'arrived_at_port') {
+            $timeline[] = [
+                'title' => 'Cargo Picked Up',
+                'description' => 'Your cargo has been successfully picked up.',
+                'date' => $shipment->picked_up_at ?? now(),
+                'status' => 'completed',
+                'icon' => 'package'
+            ];
+        }
+
+        // In Transit to Port
+        if ($shipment->status === 'in_transit_to_port' || $shipment->status === 'arrived_at_port') {
+            $timeline[] = [
+                'title' => 'In Transit to Port',
+                'description' => 'Lorry is transporting your cargo to the destination port.',
+                'date' => $shipment->picked_up_at ?? now(),
+                'status' => 'completed',
+                'icon' => 'truck'
+            ];
+        }
+
+        // Arrived at Port
+        if ($shipment->status === 'arrived_at_port') {
+            $timeline[] = [
+                'title' => 'Arrived at Port',
+                'description' => 'Your cargo has arrived at the destination port.',
+                'date' => $shipment->arrived_at_port_at ?? now(),
                 'status' => 'completed',
                 'icon' => 'check-circle'
+            ];
+        }
+
+        // Proof of Arrival Uploaded
+        if ($shipment->proof_of_arrival_file_path) {
+            $timeline[] = [
+                'title' => 'Proof of Arrival Uploaded',
+                'description' => 'Proof of cargo pickup has been uploaded.',
+                'date' => $shipment->picked_up_at ?? now(),
+                'status' => 'completed',
+                'icon' => 'file-check'
+            ];
+        }
+
+        // Proof of Delivery Uploaded
+        if ($shipment->pod_file_path) {
+            $timeline[] = [
+                'title' => 'Proof of Delivery Uploaded',
+                'description' => 'Proof of arrival at port has been uploaded.',
+                'date' => $shipment->arrived_at_port_at ?? now(),
+                'status' => 'completed',
+                'icon' => 'file-check'
             ];
         }
 

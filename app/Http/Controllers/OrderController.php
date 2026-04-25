@@ -48,7 +48,7 @@ class OrderController extends Controller
 
         $orders = $query->paginate(10)->withQueryString();
 
-        return view('orders.index', compact('orders'));
+        return view('invotrack.orders.index', compact('orders'));
     }
 
     /**
@@ -56,7 +56,7 @@ class OrderController extends Controller
      */
     public function create()
     {
-        return view('orders.create');
+        return view('invotrack.orders.create');
     }
 
     /**
@@ -122,7 +122,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load('invoice.payments', 'invoice.shipment');
-        return view('orders.show', compact('order'));
+        return view('invotrack.orders.show', compact('order'));
     }
 
     /**
@@ -130,7 +130,7 @@ class OrderController extends Controller
      */
     public function edit(Order $order)
     {
-        return view('orders.edit', compact('order'));
+        return view('invotrack.orders.edit', compact('order'));
     }
 
     /**

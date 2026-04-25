@@ -17,7 +17,7 @@ class PaymentController extends Controller
             ->latest()
             ->paginate(10);
         
-        return view('payments.index', compact('payments'));
+        return view('invotrack.payments.index', compact('payments'));
     }
 
     /**
@@ -29,7 +29,7 @@ class PaymentController extends Controller
             return back()->with('error', 'Payments can only be created for issued invoices.');
         }
 
-        return view('payments.create', compact('invoice'));
+        return view('invotrack.payments.create', compact('invoice'));
     }
 
     /**

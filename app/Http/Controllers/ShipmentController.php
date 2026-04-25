@@ -17,7 +17,7 @@ class ShipmentController extends Controller
             ->latest()
             ->paginate(10);
         
-        return view('shipments.index', compact('shipments'));
+        return view('invotrack.shipments.index', compact('shipments'));
     }
 
     /**
@@ -27,7 +27,7 @@ class ShipmentController extends Controller
     {
         $shipment->load(['invoice.order']);
         
-        return view('shipments.show', compact('shipment'));
+        return view('invotrack.shipments.show', compact('shipment'));
     }
 
     /**
@@ -35,13 +35,118 @@ class ShipmentController extends Controller
      */
     public function track(Shipment $shipment)
     {
-        $shipment->load(['invoice.order']);
+        $shipment->load(['invoice.order', 'invoice.payments']);
+
+        return view('invotrack.shipments.track', compact('shipment'));
+    }
+
+    /**
+     * Show shipment timeline
+     */
+    public function timeline(Shipment $shipment)
+    {
+        $shipment->load(['invoice.order', 'invoice.payments']);
         
-        // Generate mock tracking data based on status
-        $trackingHistory = $this->generateTrackingHistory($shipment);
-        $currentLocation = $this->getCurrentLocation($shipment);
-        
-        return view('shipments.track', compact('shipment', 'trackingHistory', 'currentLocation'));
+        // Create timeline events based on shipment status and dates
+        $timeline = $this->generateTimeline($shipment);
+
+        return view('invotrack.shipments.timeline', compact('shipment', 'timeline'));
+    }
+
+    /**
+     * Generate shipment timeline events
+     */
+    private function generateTimeline(Shipment $shipment)
+    {
+        $timeline = [];
+
+        // Booking Confirmed
+        $timeline[] = [
+            'title' => 'Booking Confirmed',
+            'description' => 'Transport booking has been confirmed.',
+            'date' => $shipment->created_at,
+            'status' => 'completed',
+            'icon' => 'shopping-cart'
+        ];
+
+        // Lorry Assigned
+        if ($shipment->status === 'lorry_assigned' || $shipment->status === 'en_route_to_pickup' || $shipment->status === 'cargo_picked_up' || $shipment->status === 'in_transit_to_port' || $shipment->status === 'arrived_at_port') {
+            $timeline[] = [
+                'title' => 'Lorry Assigned',
+                'description' => 'Lorry has been assigned for this transport.',
+                'date' => $shipment->created_at,
+                'status' => 'completed',
+                'icon' => 'truck'
+            ];
+        }
+
+        // Lorry On The Way to Customer (Pickup in progress)
+        if ($shipment->status === 'en_route_to_pickup' || $shipment->status === 'cargo_picked_up' || $shipment->status === 'in_transit_to_port' || $shipment->status === 'arrived_at_port') {
+            $timeline[] = [
+                'title' => 'Lorry On The Way to Customer',
+                'description' => 'Lorry is traveling to customer location for pickup.',
+                'date' => $shipment->pickup_started_at ?? now(),
+                'status' => 'completed',
+                'icon' => 'truck'
+            ];
+        }
+
+        // Cargo Picked Up
+        if ($shipment->status === 'cargo_picked_up' || $shipment->status === 'in_transit_to_port' || $shipment->status === 'arrived_at_port') {
+            $timeline[] = [
+                'title' => 'Cargo Picked Up',
+                'description' => 'Cargo has been successfully picked up from customer.',
+                'date' => $shipment->picked_up_at ?? now(),
+                'status' => 'completed',
+                'icon' => 'package'
+            ];
+        }
+
+        // In Transit to Port
+        if ($shipment->status === 'in_transit_to_port' || $shipment->status === 'arrived_at_port') {
+            $timeline[] = [
+                'title' => 'In Transit to Port',
+                'description' => 'Lorry is transporting cargo to the destination port.',
+                'date' => $shipment->picked_up_at ?? now(),
+                'status' => 'completed',
+                'icon' => 'truck'
+            ];
+        }
+
+        // Arrived at Port
+        if ($shipment->status === 'arrived_at_port') {
+            $timeline[] = [
+                'title' => 'Arrived at Port',
+                'description' => 'Cargo has arrived at the destination port.',
+                'date' => $shipment->arrived_at_port_at ?? now(),
+                'status' => 'completed',
+                'icon' => 'check-circle'
+            ];
+        }
+
+        // Proof of Arrival Uploaded
+        if ($shipment->proof_of_arrival_file_path) {
+            $timeline[] = [
+                'title' => 'Proof of Arrival Uploaded',
+                'description' => 'Proof of cargo pickup has been uploaded.',
+                'date' => $shipment->picked_up_at ?? now(),
+                'status' => 'completed',
+                'icon' => 'file-check'
+            ];
+        }
+
+        // Proof of Delivery Uploaded
+        if ($shipment->pod_file_path) {
+            $timeline[] = [
+                'title' => 'Proof of Delivery Uploaded',
+                'description' => 'Proof of arrival at port has been uploaded.',
+                'date' => $shipment->arrived_at_port_at ?? now(),
+                'status' => 'completed',
+                'icon' => 'file-check'
+            ];
+        }
+
+        return $timeline;
     }
 
     /**
@@ -175,7 +280,7 @@ class ShipmentController extends Controller
             return back()->with('error', 'A shipment already exists for this invoice.');
         }
 
-        return view('shipments.create', compact('invoice'));
+        return view('invotrack.shipments.create', compact('invoice'));
     }
 
     /**
@@ -214,15 +319,34 @@ class ShipmentController extends Controller
     public function updateStatus(Request $request, Shipment $shipment)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,shipped,delivered',
+            'status' => 'required|in:booking_confirmed,lorry_assigned,en_route_to_pickup,cargo_picked_up,in_transit_to_port,arrived_at_port',
         ]);
 
-        if ($validated['status'] === 'shipped') {
-            $shipment->markAsShipped();
-        } elseif ($validated['status'] === 'delivered') {
-            $shipment->markAsDelivered();
-        } else {
-            $shipment->update(['status' => 'pending']);
+        // Check if payment is made before allowing status beyond booking_confirmed
+        if ($validated['status'] !== 'booking_confirmed') {
+            if (!$shipment->invoice || $shipment->invoice->status !== 'paid') {
+                return back()->with('error', 'Customer must make payment before updating shipment status beyond Booking Confirmed.');
+            }
+        }
+
+        switch ($validated['status']) {
+            case 'lorry_assigned':
+                $shipment->markLorryAssigned();
+                break;
+            case 'en_route_to_pickup':
+                $shipment->markEnRouteToPickup();
+                break;
+            case 'cargo_picked_up':
+                $shipment->markCargoPickedUp();
+                break;
+            case 'in_transit_to_port':
+                $shipment->markInTransitToPort();
+                break;
+            case 'arrived_at_port':
+                $shipment->markArrivedAtPort();
+                break;
+            default:
+                $shipment->update(['status' => 'booking_confirmed']);
         }
 
         return back()->with('success', 'Shipment status updated successfully.');
@@ -246,5 +370,25 @@ class ShipmentController extends Controller
         }
 
         return back()->with('success', 'Proof of delivery uploaded successfully.');
+    }
+
+    /**
+     * Upload proof of arrival (cargo pickup).
+     */
+    public function uploadProofOfArrival(Request $request, Shipment $shipment)
+    {
+        $validated = $request->validate([
+            'arrival_file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ]);
+
+        if ($request->hasFile('arrival_file')) {
+            $file = $request->file('arrival_file');
+            $filename = 'arrival_' . $shipment->tracking_number . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('arrival', $filename, 'public');
+            
+            $shipment->uploadProofOfArrival($path);
+        }
+
+        return back()->with('success', 'Proof of arrival uploaded successfully.');
     }
 }
