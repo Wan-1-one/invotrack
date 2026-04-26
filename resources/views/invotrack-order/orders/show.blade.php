@@ -24,9 +24,9 @@
                     <div>
                         <h2 class="text-lg font-semibold text-gray-900">Order Status</h2>
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mt-2
-                            {{ $order->status === 'confirmed' ? 'bg-green-100 text-green-800' : 
+                            {{ $order->status === 'confirmed' ? 'bg-green-100 text-green-800' :
                                ($order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">
-                            {{ $order->status }}
+                            {{ $order->formatted_status }}
                         </span>
                     </div>
                     <div class="text-right">
@@ -93,9 +93,9 @@
                         <div class="flex justify-between">
                             <span class="text-gray-600">Status:</span>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                {{ $order->invoice->status === 'paid' ? 'bg-green-100 text-green-800' : 
+                                {{ $order->invoice->status === 'paid' ? 'bg-green-100 text-green-800' :
                                    ($order->invoice->status === 'issued' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">
-                                {{ $order->invoice->status }}
+                                {{ $order->invoice->formatted_status }}
                             </span>
                         </div>
                         @if($order->invoice->issue_date)
@@ -144,9 +144,9 @@
                         <div class="flex justify-between">
                             <span class="text-gray-600">Status:</span>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                {{ $order->invoice->shipment->status === 'delivered' ? 'bg-green-100 text-green-800' : 
+                                {{ $order->invoice->shipment->status === 'delivered' ? 'bg-green-100 text-green-800' :
                                    ($order->invoice->shipment->status === 'shipped' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
-                                {{ $order->invoice->shipment->status }}
+                                {{ $order->invoice->shipment->formatted_status }}
                             </span>
                         </div>
                         @if($order->invoice->shipment->shipped_date)

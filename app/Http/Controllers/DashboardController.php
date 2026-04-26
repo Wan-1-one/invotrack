@@ -17,10 +17,11 @@ class DashboardController extends Controller
         $stats = [
             'total_orders' => Order::count(),
             'total_invoices' => Invoice::count(),
-            'paid_invoices' => Invoice::where('status', 'paid')->count(),
+            'paid_invoices' => Invoice::whereIn('status', ['paid', 'closed'])->count(),
             'pending_shipments' => Shipment::where('status', 'pending')->count(),
             'shipped_count' => Shipment::where('status', 'shipped')->count(),
-            'delivered_count' => Shipment::where('status', 'delivered')->count(),
+            'delivered_count' => Shipment::whereIn('status', ['delivered', 'arrived_at_port'])->count(),
+            'total_shipments' => Shipment::count(),
         ];
 
         $recentOrders = Order::with('invoice')->latest()->take(2)->get();

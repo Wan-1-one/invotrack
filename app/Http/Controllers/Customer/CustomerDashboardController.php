@@ -16,35 +16,32 @@ class CustomerDashboardController extends Controller
      */
     public function index()
     {
-        $customer = Auth::user();
-        
-        // Get recent orders
-        $recentOrders = $customer ? 
-            $customer->orders()->orderBy('created_at', 'desc')->take(5)->get() :
-            collect();
+        // Get all orders since there's no authentication
+        $customerOrders = Order::orderBy('created_at', 'desc');
+
+        // Get recent orders (top 2)
+        $recentOrders = $customerOrders->take(2)->get();
 
         // Get order statistics
         $stats = [
-            'total_orders' => $customer ? $customer->orders()->count() : 0,
-            'pending_orders' => $customer ? $customer->orders()->where('status', 'pending')->count() : 0,
-            'confirmed_orders' => $customer ? $customer->orders()->where('status', 'confirmed')->count() : 0,
-            'total_amount' => $customer ? $customer->orders()->sum('total_amount') : 0,
+            'total_orders' => $customerOrders->count(),
+            'pending_payment' => Invoice::whereNotIn('status', ['paid', 'closed'])->count(),
+            'confirmed_orders' => (clone $customerOrders)->where('status', 'confirmed')->count(),
+            'total_amount' => (clone $customerOrders)->sum('total_amount'),
         ];
 
-        // Get recent invoices
-        $recentInvoices = $customer ? 
-            Invoice::whereHas('order', function($query) use ($customer) {
-                $query->where('customer_id', $customer->id);
-            })->orderBy('created_at', 'desc')->take(3)->get() :
-            collect();
+        // Get active shipments (top 2) - only show if lorry assigned or payment made
+        $activeShipments = Shipment::where('status', '!=', 'delivered')
+            ->where(function($query) {
+                $query->where('status', 'lorry_assigned')
+                      ->orWhereHas('invoice', function($q) {
+                          $q->whereHas('payments');
+                      });
+            })
+            ->orderBy('created_at', 'desc')
+            ->take(2)
+            ->get();
 
-        // Get active shipments
-        $activeShipments = $customer ? 
-            Shipment::whereHas('invoice.order', function($query) use ($customer) {
-                $query->where('customer_id', $customer->id);
-            })->where('status', '!=', 'delivered')->orderBy('created_at', 'desc')->take(3)->get() :
-            collect();
-
-        return view('customer.dashboard', compact('recentOrders', 'stats', 'recentInvoices', 'activeShipments'));
+        return view('customer.dashboard', compact('recentOrders', 'stats', 'activeShipments'));
     }
 }

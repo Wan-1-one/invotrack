@@ -40,9 +40,6 @@
                                     Status
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Due Date
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
@@ -67,18 +64,13 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-800' : 
+                                            {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-800' :
                                                ($invoice->status === 'issued' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">
-                                            {{ $invoice->status }}
+                                            {{ $invoice->formatted_status }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">
-                                            {{ $invoice->due_date ? $invoice->due_date->format('M d, Y') : 'N/A' }}
-                                        </div>
-                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="{{ route('admin.invoices.show', $invoice) }}" 
+                                        <a href="{{ route('admin.invoices.show', $invoice) }}"
                                            class="text-indigo-600 hover:text-indigo-900 mr-3">
                                             View
                                         </a>
@@ -87,6 +79,12 @@
                                                 @csrf
                                                 <button type="submit" class="text-green-600 hover:text-green-900">Issue</button>
                                             </form>
+                                        @endif
+                                        @if(!$invoice->isCustomerPaid() && $invoice->status !== 'draft')
+                                            <a href="{{ route('admin.payments.create', $invoice) }}"
+                                               class="text-green-600 hover:text-green-900 ml-3">
+                                                Pay
+                                            </a>
                                         @endif
                                     </td>
                                 </tr>

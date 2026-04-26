@@ -36,7 +36,7 @@ class CustomerPaymentController extends Controller
     {
         $request->validate([
             'invoice_id' => ['required', 'exists:invoices,id'],
-            'payment_method' => ['required', 'string', 'in:bank_transfer,credit_card,cash,online_banking'],
+            'payment_method' => ['required', 'string', 'in:bank_transfer,credit_card,cash,other'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'payment_date' => ['required', 'date'],
             'reference_number' => ['nullable', 'string', 'max:255'],
@@ -60,30 +60,19 @@ class CustomerPaymentController extends Controller
         try {
             DB::beginTransaction();
 
-            // Create payment
+            // Create payment with pending status (requires admin verification)
             $payment = Payment::create([
                 'invoice_id' => $invoice->id,
                 'amount' => $request->amount,
                 'payment_method' => $request->payment_method,
                 'payment_date' => $request->payment_date,
-                'reference_number' => $request->reference_number,
+                'transaction_reference' => $request->reference_number,
                 'notes' => $request->notes,
-                'status' => 'completed',
+                'status' => 'pending',
             ]);
 
-            // Update invoice status if fully paid
-            $newTotalPaid = $totalPaid + $request->amount;
-            if ($newTotalPaid >= $invoice->amount) {
-                $invoice->update([
-                    'status' => 'paid',
-                    'paid_date' => $request->payment_date,
-                ]);
-
-                // Update order status
-                $invoice->order->update(['status' => 'confirmed']);
-            } else {
-                $invoice->update(['status' => 'partially_paid']);
-            }
+            // Update invoice status to partially_paid (will be updated to paid when admin verifies)
+            $invoice->update(['status' => 'partially_paid']);
 
             DB::commit();
 
@@ -93,7 +82,7 @@ class CustomerPaymentController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()
-                ->with('error', 'Failed to process payment. Please try again.');
+                ->with('error', 'Failed to process payment. Please try again. Error: ' . $e->getMessage());
         }
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -42,7 +43,7 @@ class PaymentController extends Controller
             'amount' => 'required|numeric|min:0',
             'payment_method' => 'required|in:cash,bank_transfer,credit_card,other',
             'payment_date' => 'required|date',
-            'transaction_reference' => 'nullable|string|max:255',
+            'reference_number' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
         ]);
 
@@ -52,10 +53,26 @@ class PaymentController extends Controller
             return back()->with('error', 'This invoice is already fully paid.');
         }
 
-        $payment = Payment::create($validated);
+        try {
+            $payment = Payment::create([
+                'invoice_id' => $validated['invoice_id'],
+                'amount' => $validated['amount'],
+                'payment_method' => $validated['payment_method'],
+                'payment_date' => $validated['payment_date'],
+                'transaction_reference' => $validated['reference_number'],
+                'notes' => $validated['notes'],
+                'status' => 'pending',
+            ]);
 
-        return redirect()->route('admin.payments.index')
-            ->with('success', 'Payment recorded successfully. Please verify the payment to update invoice status.');
+            // Update invoice status to partially_paid
+            $invoice->update(['status' => 'partially_paid']);
+
+            return redirect()->route('admin.payments.index')
+                ->with('success', 'Payment recorded successfully. Please verify the payment to update invoice status.');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Failed to process payment. Please try again. Error: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -63,8 +80,35 @@ class PaymentController extends Controller
      */
     public function verify(Payment $payment)
     {
-        $payment->verify();
-        
-        return back()->with('success', 'Payment verified and invoice updated.');
+        try {
+            DB::beginTransaction();
+
+            // Update payment status to verified
+            $payment->status = 'verified';
+            $payment->save();
+
+            $invoice = $payment->invoice;
+
+            // Check if invoice is fully paid with verified payments
+            $totalVerified = $invoice->payments()->where('status', 'verified')->sum('amount');
+            if ($totalVerified >= $invoice->amount) {
+                $invoice->update([
+                    'status' => 'paid',
+                    'paid_date' => now(),
+                ]);
+
+                // Update order status
+                if ($invoice->order) {
+                    $invoice->order->update(['status' => 'confirmed']);
+                }
+            }
+
+            DB::commit();
+
+            return back()->with('success', 'Payment verified and invoice updated.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to verify payment. Error: ' . $e->getMessage());
+        }
     }
 }

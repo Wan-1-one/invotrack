@@ -47,4 +47,12 @@ class Payment extends Model
             $invoice->save();
         }
     }
+
+    /**
+     * Get formatted status text
+     */
+    public function getFormattedStatusAttribute()
+    {
+        return ucwords(str_replace('_', ' ', $this->status));
+    }
 }

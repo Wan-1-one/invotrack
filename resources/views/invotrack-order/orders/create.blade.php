@@ -37,7 +37,8 @@
                                         </label>
                                         <input type="text" id="customer_name" name="customer_name" required
                                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                                               placeholder="Enter your full name">
+                                               placeholder="Enter your full name"
+                                               value="{{ old('customer_name') }}">
                                     </div>
 
                                     <div>
@@ -46,7 +47,8 @@
                                         </label>
                                         <input type="email" id="customer_email" name="customer_email" required
                                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                                               placeholder="Enter your email address">
+                                               placeholder="Enter your email address"
+                                               value="{{ old('customer_email') }}">
                                     </div>
 
                                     <div>
@@ -55,7 +57,8 @@
                                         </label>
                                         <input type="tel" id="customer_phone" name="customer_phone"
                                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                                               placeholder="+60 12-3456789">
+                                               placeholder="+60 12-3456789"
+                                               value="{{ old('customer_phone') }}">
                                     </div>
 
                                     <div>
@@ -64,7 +67,7 @@
                                         </label>
                                         <textarea id="customer_address" name="customer_address" rows="3" required
                                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                                                  placeholder="Enter your complete delivery address"></textarea>
+                                                  placeholder="Enter your complete delivery address">{{ old('customer_address') }}</textarea>
                                     </div>
                                 </div>
                             </div>
@@ -84,12 +87,12 @@
                                         <select id="transportation_type" name="transportation_type" required
                                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                                             <option value="">Select transportation type</option>
-                                            <option value="container_20ft">Container (20ft) - RM2,500</option>
-                                            <option value="container_40ft">Container (40ft) - RM4,000</option>
-                                            <option value="box_truck">Box Truck - RM1,200</option>
-                                            <option value="curtain_sider">Curtain Sider - RM1,500</option>
-                                            <option value="flatbed">Flatbed - RM1,800</option>
-                                            <option value="refrigerated_truck">Refrigerated Truck - RM2,200</option>
+                                            <option value="container_20ft" {{ old('transportation_type') == 'container_20ft' ? 'selected' : '' }}>Container (20ft) - RM2,500</option>
+                                            <option value="container_40ft" {{ old('transportation_type') == 'container_40ft' ? 'selected' : '' }}>Container (40ft) - RM4,000</option>
+                                            <option value="box_truck" {{ old('transportation_type') == 'box_truck' ? 'selected' : '' }}>Box Truck - RM1,200</option>
+                                            <option value="curtain_sider" {{ old('transportation_type') == 'curtain_sider' ? 'selected' : '' }}>Curtain Sider - RM1,500</option>
+                                            <option value="flatbed" {{ old('transportation_type') == 'flatbed' ? 'selected' : '' }}>Flatbed - RM1,800</option>
+                                            <option value="refrigerated_truck" {{ old('transportation_type') == 'refrigerated_truck' ? 'selected' : '' }}>Refrigerated Truck - RM2,200</option>
                                         </select>
                                     </div>
 
@@ -97,7 +100,7 @@
                                         <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">
                                             Quantity *
                                         </label>
-                                        <input type="number" id="quantity" name="quantity" min="1" value="1" required
+                                        <input type="number" id="quantity" name="quantity" min="1" value="{{ old('quantity', '1') }}" required
                                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
                                                onchange="calculateTotal()">
                                     </div>
@@ -108,7 +111,8 @@
                                         </label>
                                         <input type="number" id="auto_price" name="auto_price" step="0.01" min="0.01" required readonly
                                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                                               placeholder="Auto-calculated based on transportation type">
+                                               placeholder="Auto-calculated based on transportation type"
+                                               value="{{ old('auto_price') }}">
                                     </div>
 
                                     <div>
@@ -120,22 +124,22 @@
                                             <option value="">Select delivery port</option>
                                             
                                             <optgroup label="Selangor">
-                                                <option value="port_klang">Port Klang - RM100</option>
-                                                <option value="westports_port_klang">Westports Port Klang - RM150</option>
-                                                <option value="northport_port_klang">Northport Port Klang - RM120</option>
+                                                <option value="port_klang" {{ old('delivery_destination') == 'port_klang' ? 'selected' : '' }}>Port Klang - RM100</option>
+                                                <option value="westports_port_klang" {{ old('delivery_destination') == 'westports_port_klang' ? 'selected' : '' }}>Westports Port Klang - RM150</option>
+                                                <option value="northport_port_klang" {{ old('delivery_destination') == 'northport_port_klang' ? 'selected' : '' }}>Northport Port Klang - RM120</option>
                                             </optgroup>
                                             
                                             <optgroup label="Johor">
-                                                <option value="tanjung_pelepas">Port of Tanjung Pelepas - RM200</option>
-                                                <option value="johor_port">Johor Port - RM180</option>
+                                                <option value="tanjung_pelepas" {{ old('delivery_destination') == 'tanjung_pelepas' ? 'selected' : '' }}>Port of Tanjung Pelepas - RM200</option>
+                                                <option value="johor_port" {{ old('delivery_destination') == 'johor_port' ? 'selected' : '' }}>Johor Port - RM180</option>
                                             </optgroup>
                                             
                                             <optgroup label="Pulau Pinang">
-                                                <option value="penang_port">Penang Port - RM160</option>
+                                                <option value="penang_port" {{ old('delivery_destination') == 'penang_port' ? 'selected' : '' }}>Penang Port - RM160</option>
                                             </optgroup>
                                             
                                             <optgroup label="Pahang">
-                                                <option value="kuantan_port">Kuantan Port - RM140</option>
+                                                <option value="kuantan_port" {{ old('delivery_destination') == 'kuantan_port' ? 'selected' : '' }}>Kuantan Port - RM140</option>
                                             </optgroup>
                                             
                                                                                     </select>
@@ -148,10 +152,10 @@
                                         <select id="cargo_size" name="cargo_size" required
                                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                                             <option value="">Select cargo size</option>
-                                            <option value="small">Small (1–3 ton)</option>
-                                            <option value="medium">Medium (5–10 ton)</option>
-                                            <option value="large">Large (10–20 ton)</option>
-                                            <option value="fcl">Full Container Load (FCL)</option>
+                                            <option value="small" {{ old('cargo_size') == 'small' ? 'selected' : '' }}>Small (1–3 ton)</option>
+                                            <option value="medium" {{ old('cargo_size') == 'medium' ? 'selected' : '' }}>Medium (5–10 ton)</option>
+                                            <option value="large" {{ old('cargo_size') == 'large' ? 'selected' : '' }}>Large (10–20 ton)</option>
+                                            <option value="fcl" {{ old('cargo_size') == 'fcl' ? 'selected' : '' }}>Full Container Load (FCL)</option>
                                         </select>
                                     </div>
 
@@ -162,20 +166,20 @@
                                         <select id="type_of_goods" name="type_of_goods" required
                                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                                             <option value="">Select type of goods</option>
-                                            <option value="furniture">Furniture</option>
-                                            <option value="electronics">Electronics</option>
-                                            <option value="frozen_food">Frozen Food</option>
-                                            <option value="construction_materials">Construction Materials</option>
-                                            <option value="machinery">Machinery</option>
-                                            <option value="vehicles">Vehicles</option>
-                                            <option value="textiles">Textiles</option>
-                                            <option value="chemicals">Chemicals</option>
-                                            <option value="paper_products">Paper Products</option>
-                                            <option value="plastic_products">Plastic Products</option>
-                                            <option value="metal_products">Metal Products</option>
-                                            <option value="agricultural_products">Agricultural Products</option>
-                                            <option value="medical_supplies">Medical Supplies</option>
-                                            <option value="general_cargo">General Cargo</option>
+                                            <option value="furniture" {{ old('type_of_goods') == 'furniture' ? 'selected' : '' }}>Furniture</option>
+                                            <option value="electronics" {{ old('type_of_goods') == 'electronics' ? 'selected' : '' }}>Electronics</option>
+                                            <option value="frozen_food" {{ old('type_of_goods') == 'frozen_food' ? 'selected' : '' }}>Frozen Food</option>
+                                            <option value="construction_materials" {{ old('type_of_goods') == 'construction_materials' ? 'selected' : '' }}>Construction Materials</option>
+                                            <option value="machinery" {{ old('type_of_goods') == 'machinery' ? 'selected' : '' }}>Machinery</option>
+                                            <option value="vehicles" {{ old('type_of_goods') == 'vehicles' ? 'selected' : '' }}>Vehicles</option>
+                                            <option value="textiles" {{ old('type_of_goods') == 'textiles' ? 'selected' : '' }}>Textiles</option>
+                                            <option value="chemicals" {{ old('type_of_goods') == 'chemicals' ? 'selected' : '' }}>Chemicals</option>
+                                            <option value="paper_products" {{ old('type_of_goods') == 'paper_products' ? 'selected' : '' }}>Paper Products</option>
+                                            <option value="plastic_products" {{ old('type_of_goods') == 'plastic_products' ? 'selected' : '' }}>Plastic Products</option>
+                                            <option value="metal_products" {{ old('type_of_goods') == 'metal_products' ? 'selected' : '' }}>Metal Products</option>
+                                            <option value="agricultural_products" {{ old('type_of_goods') == 'agricultural_products' ? 'selected' : '' }}>Agricultural Products</option>
+                                            <option value="medical_supplies" {{ old('type_of_goods') == 'medical_supplies' ? 'selected' : '' }}>Medical Supplies</option>
+                                            <option value="general_cargo" {{ old('type_of_goods') == 'general_cargo' ? 'selected' : '' }}>General Cargo</option>
                                         </select>
                                     </div>
 
@@ -185,7 +189,17 @@
                                         </label>
                                         <input type="text" id="name_of_products" name="name_of_products" required
                                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                                               placeholder="Enter product names or description">
+                                               placeholder="Enter product names or description"
+                                               value="{{ old('name_of_products') }}">
+                                    </div>
+
+                                    <div>
+                                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Notes (Optional)
+                                        </label>
+                                        <textarea id="notes" name="notes" rows="2"
+                                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                                                  placeholder="Any additional notes or instructions">{{ old('notes') }}</textarea>
                                     </div>
                                 </div>
                             </div>
@@ -384,6 +398,14 @@
         });
 
         // Initialize calculation on page load
+        calculateTotal();
+
+        // Restore calculated values from old input if validation failed
+        @if(old('auto_price'))
+            document.getElementById('auto_price').value = '{{ old('auto_price') }}';
+        @endif
+
+        // Trigger calculation after restoring values
         calculateTotal();
     </script>
 @endsection

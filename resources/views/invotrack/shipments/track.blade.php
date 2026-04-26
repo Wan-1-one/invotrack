@@ -187,7 +187,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Update Status</label>
                             <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <option value="booking_confirmed" {{ $shipment->status === 'booking_confirmed' ? 'selected' : '' }}>Booking Confirmed</option>
-                                @if($shipment->invoice && $shipment->invoice->status === 'paid')
+                                @if($shipment->invoice && in_array($shipment->invoice->status, ['paid', 'closed']))
                                 <option value="lorry_assigned" {{ $shipment->status === 'lorry_assigned' ? 'selected' : '' }}>Lorry Assigned</option>
                                 <option value="en_route_to_pickup" {{ $shipment->status === 'en_route_to_pickup' ? 'selected' : '' }}>En Route to Pickup</option>
                                 <option value="cargo_picked_up" {{ $shipment->status === 'cargo_picked_up' ? 'selected' : '' }}>Cargo Picked Up</option>
@@ -206,7 +206,7 @@
                             Update
                         </button>
                     </div>
-                    @if($shipment->invoice && $shipment->invoice->status !== 'paid')
+                    @if($shipment->invoice && !in_array($shipment->invoice->status, ['paid', 'closed']))
                     <p class="text-xs text-yellow-600 mt-1">⚠️ Customer must make payment before assigning lorry</p>
                     @endif
                 </form>
@@ -247,23 +247,35 @@
 
         <!-- Actions -->
         <div class="flex justify-end space-x-4">
-            <a href="{{ route('admin.shipments.timeline', $shipment) }}" 
+            <a href="{{ route('admin.shipments.timeline', $shipment) }}"
                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
                 View Timeline
             </a>
             @if($shipment->proof_of_arrival_file_path)
-            <a href="{{ asset('storage/' . $shipment->proof_of_arrival_file_path) }}" 
+            <a href="{{ asset('storage/' . $shipment->proof_of_arrival_file_path) }}"
                target="_blank"
                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
                 View Proof of Arrival
             </a>
+            <form action="{{ route('admin.shipments.deleteProofOfArrival', $shipment) }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                    Delete Proof of Arrival
+                </button>
+            </form>
             @endif
             @if($shipment->pod_file_path)
-            <a href="{{ asset('storage/' . $shipment->pod_file_path) }}" 
+            <a href="{{ asset('storage/' . $shipment->pod_file_path) }}"
                target="_blank"
                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
                 View Proof of Delivery
             </a>
+            <form action="{{ route('admin.shipments.deletePOD', $shipment) }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                    Delete Proof of Delivery
+                </button>
+            </form>
             @endif
         </div>
     </div>

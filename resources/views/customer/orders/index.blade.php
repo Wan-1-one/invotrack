@@ -66,11 +66,19 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($order->invoice)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                    {{ $order->invoice->status === 'paid' ? 'bg-green-100 text-green-800' : 
-                                                       ($order->invoice->status === 'issued' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">
-                                                    {{ $order->invoice->status }}
-                                                </span>
+                                                @if(in_array($order->invoice->status, ['paid', 'closed']))
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        Paid
+                                                    </span>
+                                                @elseif($order->invoice->status === 'issued')
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                        Issued
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                        Payment Pending Verification
+                                                    </span>
+                                                @endif
                                             @else
                                                 <span class="text-sm text-gray-500">No invoice</span>
                                             @endif

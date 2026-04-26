@@ -11,6 +11,10 @@
                     <h1 class="text-3xl font-bold text-gray-900">Payments</h1>
                     <p class="mt-2 text-gray-600">Manage all customer payments</p>
                 </div>
+                <a href="{{ route('admin.invoices.index') }}" 
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                    Create Payment from Invoice
+                </a>
             </div>
         </div>
 
@@ -63,7 +67,7 @@
                                         <div class="text-sm text-gray-900">RM{{ number_format($payment->amount, 2) }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $payment->payment_method }}</div>
+                                        <div class="text-sm text-gray-900">{{ ucwords(str_replace('_', ' ', $payment->payment_method)) }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $payment->payment_date->format('M d, Y') }}</div>

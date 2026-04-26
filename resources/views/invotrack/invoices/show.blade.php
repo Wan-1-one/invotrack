@@ -160,16 +160,22 @@
                     @endif
                 </div>
                 <div class="space-y-3">
-                    <a href="{{ route('admin.shipments.track', $invoice->shipment) }}" 
+                    <a href="{{ route('admin.shipments.track', $invoice->shipment) }}"
                        class="w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium block mb-2">
                         Track Shipment
                     </a>
                     @if($invoice->shipment->pod_file_path)
-                    <a href="{{ asset('storage/' . $invoice->shipment->pod_file_path) }}" 
+                    <a href="{{ asset('storage/' . $invoice->shipment->pod_file_path) }}"
                        target="_blank"
-                       class="w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium block">
+                       class="w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium block mb-2">
                         View Proof of Delivery
                     </a>
+                    <form action="{{ route('admin.shipments.deletePOD', $invoice->shipment) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium block">
+                            Delete Proof of Delivery
+                        </button>
+                    </form>
                     @endif
                 </div>
             </div>
@@ -185,6 +191,12 @@
                         Issue Invoice
                     </button>
                 </form>
+            @endif
+            @if($invoice->status === 'issued' && !$invoice->isFullyPaid())
+                <a href="{{ route('admin.payments.create', $invoice) }}" 
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                    Make Payment
+                </a>
             @endif
             @if($invoice->order)
                 <a href="{{ route('admin.orders.show', $invoice->order) }}" 

@@ -114,9 +114,8 @@ class CustomerOrderController extends Controller
                 'invoice_id' => $invoice->id,
                 'tracking_number' => Shipment::generateTrackingNumber(),
                 'shipping_address' => $customer?->profile?->address ?? $request->customer_address,
-                'status' => 'pending',
+                'status' => 'booking_confirmed',
                 'courier_name' => 'Pending Assignment',
-                'estimated_delivery' => now()->addDays(7)->toDateString(),
             ]);
 
             DB::commit();
@@ -213,11 +212,8 @@ class CustomerOrderController extends Controller
      */
     public function index()
     {
-        $customer = Auth::user();
-        
-        $orders = $customer ? 
-            $customer->orders()->orderBy('created_at', 'desc')->paginate(10) :
-            Order::where('customer_id', null)->orderBy('created_at', 'desc')->paginate(10);
+        // Get all orders since there's no authentication
+        $orders = Order::with('invoice')->orderBy('created_at', 'desc')->paginate(10);
 
         return view('invotrack-order.orders.index', compact('orders'));
     }

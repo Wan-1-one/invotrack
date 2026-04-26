@@ -11,7 +11,7 @@
                         <h1 class="text-3xl font-bold text-gray-900">My Invoices</h1>
                         <p class="mt-2 text-gray-600">View and manage your payment invoices</p>
                     </div>
-                    <a href="{{ route('customer.orders.create') }}" 
+                    <a href="{{ route('customer.orders.create') }}"
                        class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-purple-700 hover:to-pink-700">
                         Place New Order
                     </a>
@@ -62,18 +62,18 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-800' : 
+                                                {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-800' :
                                                    ($invoice->status === 'partially_paid' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800') }}">
-                                                {{ $invoice->status }}
+                                                {{ $invoice->formatted_status }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <a href="{{ route('customer.invoices.show', $invoice) }}" 
+                                            <a href="{{ route('customer.invoices.show', $invoice) }}"
                                                class="text-purple-600 hover:text-purple-900">
                                                 View
                                             </a>
-                                            @if($invoice->status !== 'paid')
-                                                <a href="{{ route('customer.payments.create', $invoice) }}" 
+                                            @if(!$invoice->isCustomerPaid())
+                                                <a href="{{ route('customer.payments.create', $invoice) }}"
                                                    class="ml-3 text-green-600 hover:text-green-900">
                                                     Pay
                                                 </a>

@@ -55,9 +55,9 @@
                         <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">
                             Payment Amount *
                         </label>
-                        <input type="number" id="amount" name="amount" step="0.01" min="0.01" required
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                               placeholder="Enter payment amount" value="{{ $invoice->amount }}">
+                        <input type="number" id="amount" name="amount" step="0.01" min="0.01" required readonly
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                               value="{{ $invoice->amount }}">
                     </div>
 
                     <div>
@@ -79,18 +79,18 @@
                         <label for="payment_date" class="block text-sm font-medium text-gray-700 mb-2">
                             Payment Date *
                         </label>
-                        <input type="date" id="payment_date" name="payment_date" required
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        <input type="date" id="payment_date" name="payment_date" required readonly
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                value="{{ now()->format('Y-m-d') }}">
                     </div>
 
                     <div>
                         <label for="reference_number" class="block text-sm font-medium text-gray-700 mb-2">
-                            Reference Number
+                            Reference
                         </label>
                         <input type="text" id="reference_number" name="reference_number"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                               placeholder="Enter reference number (optional)">
+                               placeholder="Enter reference (optional)">
                     </div>
 
                     <div class="md:col-span-2">

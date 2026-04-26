@@ -6,15 +6,9 @@
         <div class="px-4 py-6 sm:px-0">
             <!-- Header -->
             <div class="mb-8">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900">Shipment Timeline</h1>
-                        <p class="mt-2 text-gray-600">Tracking Number: {{ $shipment->tracking_number }}</p>
-                    </div>
-                    <a href="{{ route('customer.shipments.track', $shipment) }}" 
-                       class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium">
-                        Back to Tracking
-                    </a>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Shipment Timeline</h1>
+                    <p class="mt-2 text-gray-600">Tracking Number: {{ $shipment->tracking_number }}</p>
                 </div>
             </div>
 
@@ -87,19 +81,19 @@
 
             <!-- Actions -->
             <div class="flex justify-end space-x-4 mt-6">
-                <a href="{{ route('customer.shipments.track', $shipment) }}" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                <a href="{{ route('customer.shipments.track', $shipment) }}"
+                   class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium">
                     Back to Tracking
                 </a>
                 @if($shipment->proof_of_arrival_file_path)
-                <a href="{{ asset('storage/' . $shipment->proof_of_arrival_file_path) }}" 
+                <a href="{{ asset('storage/' . $shipment->proof_of_arrival_file_path) }}"
                    target="_blank"
                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
                     View Proof of Arrival
                 </a>
                 @endif
                 @if($shipment->pod_file_path)
-                <a href="{{ asset('storage/' . $shipment->pod_file_path) }}" 
+                <a href="{{ asset('storage/' . $shipment->pod_file_path) }}"
                    target="_blank"
                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
                     View Proof of Delivery

@@ -12,8 +12,8 @@
                         <p class="mt-2 text-gray-600">Invoice details and payment information</p>
                     </div>
                     <div class="flex space-x-3">
-                        @if($invoice->status !== 'paid')
-                            <a href="{{ route('customer.payments.create', $invoice) }}" 
+                        @if(!$invoice->isCustomerPaid())
+                            <a href="{{ route('customer.payments.create', $invoice) }}"
                                class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700">
                                 Make Payment
                             </a>
@@ -37,9 +37,9 @@
                     <div class="text-right">
                         <p class="text-sm text-gray-600">Status:</p>
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                            {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-800' : 
+                            {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-800' :
                                ($invoice->status === 'partially_paid' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800') }}">
-                            {{ $invoice->status }}
+                            {{ $invoice->formatted_status }}
                         </span>
                     </div>
                 </div>
@@ -127,7 +127,7 @@
                                     </div>
                                     <div class="text-right">
                                         <p class="font-medium">RM{{ number_format($payment->amount, 2) }}</p>
-                                        <p class="text-sm text-green-600">{{ $payment->status }}</p>
+                                        <p class="text-sm text-green-600">{{ $payment->formatted_status }}</p>
                                     </div>
                                 </div>
                             @endforeach
@@ -146,7 +146,7 @@
                             </div>
                             <div>
                                 <p class="text-gray-600">Status:</p>
-                                <p class="font-medium">{{ $invoice->shipment->status }}</p>
+                                <p class="font-medium">{{ $invoice->shipment->formatted_status }}</p>
                             </div>
                             <div>
                                 <p class="text-gray-600">Courier:</p>

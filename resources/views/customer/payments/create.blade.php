@@ -68,7 +68,7 @@
                                 <option value="bank_transfer">Bank Transfer</option>
                                 <option value="credit_card">Credit Card</option>
                                 <option value="cash">Cash</option>
-                                <option value="online_banking">Online Banking</option>
+                                <option value="other">Other</option>
                             </select>
                         </div>
 
@@ -77,13 +77,9 @@
                             <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">
                                 Payment Amount (RM) *
                             </label>
-                            <input type="number" id="amount" name="amount" step="0.01" min="0.01" required
-                                   max="{{ $invoice->amount - $invoice->payments->sum('amount') }}"
-                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                                   placeholder="Enter amount">
-                            <p class="mt-1 text-xs text-gray-500">
-                                Maximum amount: RM{{ number_format($invoice->amount - $invoice->payments->sum('amount'), 2) }}
-                            </p>
+                            <input type="number" id="amount" name="amount" step="0.01" min="0.01" required readonly
+                                   value="{{ $invoice->amount - $invoice->payments->sum('amount') }}"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                         </div>
 
                         <!-- Payment Date -->
@@ -91,15 +87,15 @@
                             <label for="payment_date" class="block text-sm font-medium text-gray-700 mb-2">
                                 Payment Date *
                             </label>
-                            <input type="date" id="payment_date" name="payment_date" required
+                            <input type="date" id="payment_date" name="payment_date" required readonly
                                    value="{{ now()->format('Y-m-d') }}"
-                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                         </div>
 
-                        <!-- Reference Number -->
+                        <!-- Reference -->
                         <div>
                             <label for="reference_number" class="block text-sm font-medium text-gray-700 mb-2">
-                                Reference Number
+                                Reference
                             </label>
                             <input type="text" id="reference_number" name="reference_number"
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"

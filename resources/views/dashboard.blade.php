@@ -74,10 +74,6 @@
         <div class="max-w-7xl mx-auto">
             <!-- Page Title Section -->
             <div class="text-center mb-12 slide-in">
-                <div class="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-full mb-6">
-                    <div class="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
-                    <span class="text-sm font-medium text-blue-700">Live Dashboard Overview</span>
-                </div>
                 <h2 class="text-4xl font-bold text-slate-900 mb-4">Dashboard Analytics</h2>
                 <p class="text-xl text-slate-600 font-light">Real-time business metrics and workflow status</p>
             </div>
@@ -167,9 +163,9 @@
                         <div>
                             <p class="text-sm text-white/70 font-medium mb-2">Delivery Status</p>
                             <p class="text-3xl font-bold text-white mb-1">
-                                {{ $stats['shipped_count'] }} / {{ $stats['delivered_count'] }}
+                                {{ $stats['delivered_count'] }} / {{ $stats['total_shipments'] }}
                             </p>
-                            <p class="text-sm text-white/60">In transit / Delivered</p>
+                            <p class="text-sm text-white/60">{{ $stats['total_shipments'] > 0 ? round(($stats['delivered_count'] / $stats['total_shipments']) * 100, 1) : 0 }}% completion rate</p>
                         </div>
                     </div>
                 </div>
