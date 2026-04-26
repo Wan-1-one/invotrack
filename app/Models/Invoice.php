@@ -52,27 +52,52 @@ class Invoice extends Model
     }
 
     /**
-     * Generate unique invoice number
+     * Generate unique invoice number with retry mechanism to prevent duplicates
      */
     public static function generateInvoiceNumber()
     {
         $prefix = 'INV';
         $year = date('Y');
         $month = date('m');
-        $lastInvoice = self::where('invoice_number', 'like', "{$prefix}{$year}{$month}%")
-            ->orderBy('invoice_number', 'desc')
-            ->first();
-        
-        $sequence = $lastInvoice ? (int)substr($lastInvoice->invoice_number, -4) + 1 : 1;
-        return "{$prefix}{$year}{$month}" . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+        $maxRetries = 5;
+
+        for ($i = 0; $i < $maxRetries; $i++) {
+            // Use lockForUpdate to prevent race conditions
+            $lastInvoice = self::where('invoice_number', 'like', "{$prefix}{$year}{$month}%")
+                ->lockForUpdate()
+                ->orderBy('invoice_number', 'desc')
+                ->first();
+
+            $sequence = $lastInvoice ? (int)substr($lastInvoice->invoice_number, -4) + 1 : 1;
+            $invoiceNumber = "{$prefix}{$year}{$month}" . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+
+            // Check if this invoice number already exists (race condition check)
+            if (!self::where('invoice_number', $invoiceNumber)->exists()) {
+                return $invoiceNumber;
+            }
+
+            // If exists, increment and try again
+            $sequence++;
+        }
+
+        // Fallback: use timestamp if all retries fail
+        return "{$prefix}{$year}{$month}" . str_pad(time() % 10000, 4, '0', STR_PAD_LEFT);
     }
 
     /**
-     * Check if invoice is fully paid
+     * Check if invoice is fully paid (verified payments only)
      */
     public function isFullyPaid()
     {
         return $this->payments()->where('status', 'verified')->sum('amount') >= $this->amount;
+    }
+
+    /**
+     * Check if customer has paid the full amount (including pending payments)
+     */
+    public function isCustomerPaid()
+    {
+        return $this->payments()->sum('amount') >= $this->amount;
     }
 
     /**
@@ -92,5 +117,13 @@ class Invoice extends Model
         }
 
         return $workflow;
+    }
+
+    /**
+     * Get formatted status text
+     */
+    public function getFormattedStatusAttribute()
+    {
+        return ucwords(str_replace('_', ' ', $this->status));
     }
 }

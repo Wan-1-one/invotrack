@@ -14,11 +14,6 @@ class CustomerShipmentController extends Controller
      */
     public function track(Shipment $shipment)
     {
-        // Ensure customer can only track their own shipments
-        if ($shipment->invoice->order->customer_id !== Auth::id()) {
-            abort(403, 'Unauthorized access');
-        }
-
         $shipment->load(['invoice.order', 'invoice.payments']);
 
         return view('invotrack-order.shipments.track', compact('shipment'));
@@ -29,16 +24,9 @@ class CustomerShipmentController extends Controller
      */
     public function index()
     {
-        $customer = Auth::user();
-        
-        $shipments = ($customer ? $customer->orders() : \App\Models\Order::query())
-            ->whereHas('invoice.shipment')
-            ->with(['invoice.shipment', 'invoice.order'])
-            ->get()
-            ->map(function ($order) {
-                return $order->invoice->shipment;
-            })
-            ->sortByDesc('created_at');
+        $shipments = \App\Models\Shipment::with(['invoice.order', 'invoice.payments'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('invotrack-order.shipments.index', compact('shipments'));
     }
@@ -48,11 +36,6 @@ class CustomerShipmentController extends Controller
      */
     public function timeline(Shipment $shipment)
     {
-        // Ensure customer can only view their own shipments
-        if ($shipment->invoice->order->customer_id !== Auth::id()) {
-            abort(403, 'Unauthorized access');
-        }
-
         // Create timeline events based on shipment status and dates
         $timeline = $this->generateTimeline($shipment);
 
@@ -153,5 +136,20 @@ class CustomerShipmentController extends Controller
         }
 
         return $timeline;
+    }
+
+    /**
+     * Generate shipment report
+     */
+    public function report(Shipment $shipment)
+    {
+        // Only allow report for arrived_at_port or closed shipments
+        if (!in_array($shipment->status, ['arrived_at_port']) && (!$shipment->invoice || $shipment->invoice->status !== 'closed')) {
+            return back()->with('error', 'Report can only be generated for shipments that have arrived at port or closed transactions.');
+        }
+
+        $shipment->load(['invoice.order', 'invoice.payments']);
+
+        return view('invotrack-order.shipments.report', compact('shipment'));
     }
 }

@@ -60,20 +60,37 @@
                                         <div class="text-sm text-gray-900">{{ $shipment->courier_name }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            {{ $shipment->status === 'delivered' ? 'bg-green-100 text-green-800' : 
-                                               ($shipment->status === 'shipped' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
-                                            {{ $shipment->status }}
-                                        </span>
+                                        <div class="flex flex-col gap-1">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                {{ $shipment->status === 'arrived_at_port' || $shipment->status === 'delivered' ? 'bg-green-100 text-green-800' :
+                                                   ($shipment->status === 'shipped' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
+                                                {{ $shipment->formatted_status }}
+                                            </span>
+                                            @if($shipment->invoice && $shipment->invoice->status === 'closed')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                Closed
+                                            </span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $shipment->created_at->format('M d, Y') }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="{{ route('admin.shipments.track', $shipment) }}" 
-                                           class="text-indigo-600 hover:text-indigo-900">
+                                        <a href="{{ route('admin.shipments.track', $shipment) }}"
+                                           class="text-indigo-600 hover:text-indigo-900 mr-3">
                                             Track
                                         </a>
+                                        <a href="{{ route('admin.shipments.timeline', $shipment) }}"
+                                           class="text-purple-600 hover:text-purple-900 mr-3">
+                                            Timeline
+                                        </a>
+                                        @if($shipment->status === 'arrived_at_port' || ($shipment->invoice && $shipment->invoice->status === 'closed'))
+                                        <a href="{{ route('admin.shipments.report', $shipment) }}"
+                                           class="text-green-600 hover:text-green-900 font-semibold">
+                                            View Report
+                                        </a>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

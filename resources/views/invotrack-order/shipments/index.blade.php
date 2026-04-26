@@ -11,7 +11,7 @@
                         <h1 class="text-3xl font-bold text-gray-900">Track Orders</h1>
                         <p class="mt-2 text-gray-600">Monitor your shipments and delivery status</p>
                     </div>
-                    <a href="{{ route('customer.orders.create') }}" 
+                    <a href="{{ route('customer.orders.create') }}"
                        class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-purple-700 hover:to-pink-700">
                         Place New Order
                     </a>
@@ -38,7 +38,7 @@
                                         Status
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Shipped Date
+                                        Created Date
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Actions
@@ -58,26 +58,39 @@
                                             <div class="text-sm text-gray-900">{{ $shipment->courier_name }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                {{ $shipment->status === 'delivered' ? 'bg-green-100 text-green-800' : 
-                                                   ($shipment->status === 'shipped' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
-                                                {{ $shipment->status }}
-                                            </span>
+                                            <div class="flex flex-col gap-1">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                    {{ $shipment->status === 'arrived_at_port' || $shipment->status === 'delivered' ? 'bg-green-100 text-green-800' :
+                                                       ($shipment->status === 'shipped' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
+                                                    {{ $shipment->formatted_status }}
+                                                </span>
+                                                @if($shipment->invoice && $shipment->invoice->status === 'closed')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                    Closed
+                                                </span>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">
-                                                {{ $shipment->shipped_date ? $shipment->shipped_date->format('M d, Y') : 'Not shipped' }}
+                                                {{ $shipment->created_at->format('M d, Y') }}
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <a href="{{ route('customer.shipments.track', $shipment) }}" 
+                                            <a href="{{ route('customer.shipments.track', $shipment) }}"
                                                class="text-blue-600 hover:text-blue-900 mr-3">
                                                 Track
                                             </a>
-                                            <a href="{{ route('customer.shipments.timeline', $shipment) }}" 
-                                               class="text-purple-600 hover:text-purple-900">
+                                            <a href="{{ route('customer.shipments.timeline', $shipment) }}"
+                                               class="text-purple-600 hover:text-purple-900 mr-3">
                                                 Timeline
                                             </a>
+                                            @if($shipment->status === 'arrived_at_port' || ($shipment->invoice && $shipment->invoice->status === 'closed'))
+                                            <a href="{{ route('customer.shipments.report', $shipment) }}"
+                                               class="text-green-600 hover:text-green-900 font-semibold">
+                                                View Report
+                                            </a>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach

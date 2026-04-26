@@ -306,6 +306,7 @@ class ShipmentController extends Controller
             'tracking_number' => Shipment::generateTrackingNumber(),
             'courier_name' => $validated['courier_name'],
             'shipping_address' => $validated['shipping_address'],
+            'status' => 'booking_confirmed',
             'notes' => $validated['notes'],
         ]);
 
@@ -324,12 +325,21 @@ class ShipmentController extends Controller
 
         // Check if payment is made before allowing status beyond booking_confirmed
         if ($validated['status'] !== 'booking_confirmed') {
-            if (!$shipment->invoice || $shipment->invoice->status !== 'paid') {
+            if (!$shipment->invoice || !in_array($shipment->invoice->status, ['paid', 'closed'])) {
                 return back()->with('error', 'Customer must make payment before updating shipment status beyond Booking Confirmed.');
             }
         }
 
+        // Delete POD and proof of arrival when status changes to booking_confirmed
+        if ($validated['status'] === 'booking_confirmed' && $shipment->status !== 'booking_confirmed') {
+            $this->deletePOD($shipment, false);
+            $this->deleteProofOfArrival($shipment, false);
+        }
+
         switch ($validated['status']) {
+            case 'booking_confirmed':
+                $shipment->update(['status' => 'booking_confirmed']);
+                break;
             case 'lorry_assigned':
                 $shipment->markLorryAssigned();
                 break;
@@ -345,8 +355,6 @@ class ShipmentController extends Controller
             case 'arrived_at_port':
                 $shipment->markArrivedAtPort();
                 break;
-            default:
-                $shipment->update(['status' => 'booking_confirmed']);
         }
 
         return back()->with('success', 'Shipment status updated successfully.');
@@ -390,5 +398,62 @@ class ShipmentController extends Controller
         }
 
         return back()->with('success', 'Proof of arrival uploaded successfully.');
+    }
+
+    /**
+     * Delete proof of delivery.
+     */
+    public function deletePOD(Shipment $shipment, $redirect = true)
+    {
+        if ($shipment->pod_file_path) {
+            // Delete file from storage
+            if (file_exists(storage_path('app/public/' . $shipment->pod_file_path))) {
+                unlink(storage_path('app/public/' . $shipment->pod_file_path));
+            }
+            
+            // Clear database reference
+            $shipment->pod_file_path = null;
+            $shipment->save();
+        }
+
+        if ($redirect) {
+            return back()->with('success', 'Proof of delivery deleted successfully.');
+        }
+    }
+
+    /**
+     * Delete proof of arrival.
+     */
+    public function deleteProofOfArrival(Shipment $shipment, $redirect = true)
+    {
+        if ($shipment->proof_of_arrival_file_path) {
+            // Delete file from storage
+            if (file_exists(storage_path('app/public/' . $shipment->proof_of_arrival_file_path))) {
+                unlink(storage_path('app/public/' . $shipment->proof_of_arrival_file_path));
+            }
+            
+            // Clear database reference
+            $shipment->proof_of_arrival_file_path = null;
+            $shipment->save();
+        }
+
+        if ($redirect) {
+            return back()->with('success', 'Proof of arrival deleted successfully.');
+        }
+    }
+
+    /**
+     * Generate shipment report
+     */
+    public function report(Shipment $shipment)
+    {
+        // Only allow report for arrived_at_port or closed shipments
+        if (!in_array($shipment->status, ['arrived_at_port']) && (!$shipment->invoice || $shipment->invoice->status !== 'closed')) {
+            return back()->with('error', 'Report can only be generated for shipments that have arrived at port or closed transactions.');
+        }
+
+        $shipment->load(['invoice.order', 'invoice.payments']);
+
+        return view('invotrack.shipments.report', compact('shipment'));
     }
 }

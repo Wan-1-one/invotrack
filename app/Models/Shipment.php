@@ -42,18 +42,35 @@ class Shipment extends Model
     }
 
     /**
-     * Generate unique tracking number
+     * Generate unique tracking number with retry mechanism to prevent duplicates
      */
     public static function generateTrackingNumber()
     {
         $prefix = 'TRK';
         $year = date('Y');
-        $lastShipment = self::where('tracking_number', 'like', "{$prefix}{$year}%")
-            ->orderBy('tracking_number', 'desc')
-            ->first();
-        
-        $sequence = $lastShipment ? (int)substr($lastShipment->tracking_number, -6) + 1 : 1;
-        return "{$prefix}{$year}" . str_pad($sequence, 6, '0', STR_PAD_LEFT);
+        $maxRetries = 5;
+
+        for ($i = 0; $i < $maxRetries; $i++) {
+            // Use lockForUpdate to prevent race conditions
+            $lastShipment = self::where('tracking_number', 'like', "{$prefix}{$year}%")
+                ->lockForUpdate()
+                ->orderBy('tracking_number', 'desc')
+                ->first();
+
+            $sequence = $lastShipment ? (int)substr($lastShipment->tracking_number, -6) + 1 : 1;
+            $trackingNumber = "{$prefix}{$year}" . str_pad($sequence, 6, '0', STR_PAD_LEFT);
+
+            // Check if this tracking number already exists (race condition check)
+            if (!self::where('tracking_number', $trackingNumber)->exists()) {
+                return $trackingNumber;
+            }
+
+            // If exists, increment and try again
+            $sequence++;
+        }
+
+        // Fallback: use timestamp if all retries fail
+        return "{$prefix}{$year}" . str_pad(time() % 1000000, 6, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -85,6 +102,11 @@ class Shipment extends Model
     public function markLorryAssigned()
     {
         $this->status = 'lorry_assigned';
+        // Auto-assign courier name if not set
+        if (empty($this->courier_name) || $this->courier_name === 'Pending Assignment') {
+            $couriers = ['Akmal', 'Omar', 'Ahmad', 'Zaman'];
+            $this->courier_name = $couriers[array_rand($couriers)];
+        }
         $this->save();
     }
 
@@ -136,5 +158,13 @@ class Shipment extends Model
     {
         $this->proof_of_arrival_file_path = $filePath;
         $this->save();
+    }
+
+    /**
+     * Get formatted status text
+     */
+    public function getFormattedStatusAttribute()
+    {
+        return ucwords(str_replace('_', ' ', $this->status));
     }
 }

@@ -69,7 +69,13 @@ class OrderController extends Controller
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'nullable|string|max:20|regex:/^[+]?[0-9\s\-()]+$/',
             'customer_address' => 'required|string|min:10|max:500',
-            'total_amount' => 'required|numeric|min:0.01|max:999999.99',
+            'quantity' => 'required|integer|min:1',
+            'name_of_products' => 'required|string|max:255',
+            'auto_price' => 'required|numeric|min:0.01',
+            'transportation_type' => 'required|string|in:container_20ft,container_40ft,box_truck,curtain_sider,flatbed,refrigerated_truck',
+            'delivery_destination' => 'required|string|in:port_klang,westports_port_klang,northport_port_klang,tanjung_pelepas,johor_port,penang_port,kuantan_port',
+            'cargo_size' => 'required|string|in:small,medium,large,fcl',
+            'type_of_goods' => 'required|string|in:furniture,electronics,frozen_food,construction_materials,machinery,vehicles,textiles,chemicals,paper_products,plastic_products,metal_products,agricultural_products,medical_supplies,general_cargo',
             'notes' => 'nullable|string|max:1000',
         ], [
             'customer_name.required' => 'Customer name is required.',
@@ -78,14 +84,36 @@ class OrderController extends Controller
             'customer_phone.regex' => 'Please provide a valid phone number.',
             'customer_address.required' => 'Customer address is required.',
             'customer_address.min' => 'Address must be at least 10 characters long.',
-            'total_amount.required' => 'Order amount is required.',
-            'total_amount.min' => 'Order amount must be greater than 0.',
+            'quantity.required' => 'Quantity is required.',
+            'name_of_products.required' => 'Product name is required.',
+            'auto_price.required' => 'Transportation price is required.',
+            'transportation_type.required' => 'Transportation type is required.',
+            'delivery_destination.required' => 'Delivery destination is required.',
+            'cargo_size.required' => 'Cargo size is required.',
+            'type_of_goods.required' => 'Type of goods is required.',
         ]);
 
         try {
             DB::beginTransaction();
 
+            // Define port pricing
+            $portPrices = [
+                'port_klang' => 100,
+                'westports_port_klang' => 150,
+                'northport_port_klang' => 120,
+                'tanjung_pelepas' => 200,
+                'johor_port' => 180,
+                'penang_port' => 160,
+                'kuantan_port' => 140
+            ];
+
+            $portFee = $portPrices[$request->delivery_destination] ?? 0;
+            $totalAmount = $request->quantity * ($request->auto_price + $portFee);
+
             $validated['order_number'] = Order::generateOrderNumber();
+            $validated['customer_id'] = null;
+            $validated['total_amount'] = $totalAmount;
+            $validated['price_per_unit'] = $request->auto_price + $portFee;
             $validated['status'] = 'confirmed';
 
             $order = Order::create($validated);
@@ -94,10 +122,18 @@ class OrderController extends Controller
             $invoice = Invoice::create([
                 'invoice_number' => Invoice::generateInvoiceNumber(),
                 'order_id' => $order->id,
-                'amount' => $order->total_amount,
-                'status' => 'issued', // Auto-issue for better workflow
-                'issue_date' => now()->toDateString(),
-                'due_date' => now()->addDays(30)->toDateString(),
+                'amount' => $totalAmount,
+                'status' => 'issued',
+                'issued_date' => now(),
+            ]);
+
+            // Auto-create shipment for logistics orders
+            $shipment = \App\Models\Shipment::create([
+                'invoice_id' => $invoice->id,
+                'tracking_number' => \App\Models\Shipment::generateTrackingNumber(),
+                'shipping_address' => $request->customer_address,
+                'status' => 'booking_confirmed',
+                'courier_name' => 'Pending Assignment',
             ]);
 
             DB::commit();

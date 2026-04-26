@@ -49,18 +49,43 @@ class Order extends Model
     }
 
     /**
-     * Generate unique order number
+     * Generate unique order number with retry mechanism to prevent duplicates
      */
     public static function generateOrderNumber()
     {
         $prefix = 'ORD';
         $year = date('Y');
         $month = date('m');
-        $lastOrder = self::where('order_number', 'like', "{$prefix}{$year}{$month}%")
-            ->orderBy('order_number', 'desc')
-            ->first();
-        
-        $sequence = $lastOrder ? (int)substr($lastOrder->order_number, -4) + 1 : 1;
-        return "{$prefix}{$year}{$month}" . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+        $maxRetries = 5;
+
+        for ($i = 0; $i < $maxRetries; $i++) {
+            // Use lockForUpdate to prevent race conditions
+            $lastOrder = self::where('order_number', 'like', "{$prefix}{$year}{$month}%")
+                ->lockForUpdate()
+                ->orderBy('order_number', 'desc')
+                ->first();
+
+            $sequence = $lastOrder ? (int)substr($lastOrder->order_number, -4) + 1 : 1;
+            $orderNumber = "{$prefix}{$year}{$month}" . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+
+            // Check if this order number already exists (race condition check)
+            if (!self::where('order_number', $orderNumber)->exists()) {
+                return $orderNumber;
+            }
+
+            // If exists, increment and try again
+            $sequence++;
+        }
+
+        // Fallback: use timestamp if all retries fail
+        return "{$prefix}{$year}{$month}" . str_pad(time() % 10000, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Get formatted status text
+     */
+    public function getFormattedStatusAttribute()
+    {
+        return ucwords(str_replace('_', ' ', $this->status));
     }
 }

@@ -69,9 +69,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
     Route::get('/shipments/{shipment}/track', [ShipmentController::class, 'track'])->name('shipments.track');
     Route::get('/shipments/{shipment}/timeline', [ShipmentController::class, 'timeline'])->name('shipments.timeline');
+    Route::get('/shipments/{shipment}/report', [ShipmentController::class, 'report'])->name('shipments.report');
     Route::post('/shipments/{shipment}/status', [ShipmentController::class, 'updateStatus'])->name('shipments.updateStatus');
     Route::post('/shipments/{shipment}/pod', [ShipmentController::class, 'uploadPOD'])->name('shipments.uploadPOD');
+    Route::post('/shipments/{shipment}/pod/delete', [ShipmentController::class, 'deletePOD'])->name('shipments.deletePOD');
     Route::post('/shipments/{shipment}/arrival', [ShipmentController::class, 'uploadProofOfArrival'])->name('shipments.uploadProofOfArrival');
+    Route::post('/shipments/{shipment}/arrival/delete', [ShipmentController::class, 'deleteProofOfArrival'])->name('shipments.deleteProofOfArrival');
     
     // Reports & Exports
     Route::get('/reports/financial', [ExportController::class, 'financialSummary'])->name('reports.financial');
@@ -107,4 +110,5 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/shipments', [CustomerShipmentController::class, 'index'])->name('shipments.index');
     Route::get('/shipments/{shipment}/track', [CustomerShipmentController::class, 'track'])->name('shipments.track');
     Route::get('/shipments/{shipment}/timeline', [CustomerShipmentController::class, 'timeline'])->name('shipments.timeline');
+    Route::get('/shipments/{shipment}/report', [CustomerShipmentController::class, 'report'])->name('shipments.report');
 });
