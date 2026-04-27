@@ -128,12 +128,13 @@ class OrderController extends Controller
             ]);
 
             // Auto-create shipment for logistics orders
+            $couriers = ['Zaman', 'Omar', 'Kamarul', 'Faiz'];
             $shipment = \App\Models\Shipment::create([
                 'invoice_id' => $invoice->id,
                 'tracking_number' => \App\Models\Shipment::generateTrackingNumber(),
                 'shipping_address' => $request->customer_address,
                 'status' => 'booking_confirmed',
-                'courier_name' => 'Pending Assignment',
+                'courier_name' => $couriers[array_rand($couriers)],
             ]);
 
             DB::commit();
@@ -157,7 +158,7 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        $order->load('invoice.payments', 'invoice.shipment');
+        $order->load('invoice.payments', 'invoice.shipment', 'document');
         return view('invotrack.orders.show', compact('order'));
     }
 

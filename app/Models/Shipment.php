@@ -104,7 +104,7 @@ class Shipment extends Model
         $this->status = 'lorry_assigned';
         // Auto-assign courier name if not set
         if (empty($this->courier_name) || $this->courier_name === 'Pending Assignment') {
-            $couriers = ['Akmal', 'Omar', 'Ahmad', 'Zaman'];
+            $couriers = ['Zaman', 'Omar', 'Kamarul', 'Faiz'];
             $this->courier_name = $couriers[array_rand($couriers)];
         }
         $this->save();

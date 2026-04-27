@@ -21,7 +21,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                         </svg>
                     </div>
-                    <span class="text-2xl font-bold text-slate-900">Invotrack Order</span>
+                    <span class="text-2xl font-bold text-slate-900">INVOTRACK ORDER</span>
                 </div>
                 <div class="flex items-center space-x-4">
                     <nav class="hidden md:flex space-x-8">

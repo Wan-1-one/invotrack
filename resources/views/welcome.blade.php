@@ -45,7 +45,7 @@
                                 </svg>
                             </div>
                         </div>
-                        <h2 class="text-2xl font-bold text-white text-center">Invotrack Order</h2>
+                        <h2 class="text-2xl font-bold text-white text-center">INVOTRACK ORDER</h2>
                         <p class="text-white/90 text-center mt-2">Customer Portal</p>
                     </div>
                     <div class="p-6">

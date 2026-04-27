@@ -110,12 +110,13 @@ class CustomerOrderController extends Controller
             ]);
 
             // Auto-create shipment for logistics orders
+            $couriers = ['Zaman', 'Omar', 'Kamarul', 'Faiz'];
             $shipment = Shipment::create([
                 'invoice_id' => $invoice->id,
                 'tracking_number' => Shipment::generateTrackingNumber(),
                 'shipping_address' => $customer?->profile?->address ?? $request->customer_address,
                 'status' => 'booking_confirmed',
-                'courier_name' => 'Pending Assignment',
+                'courier_name' => $couriers[array_rand($couriers)],
             ]);
 
             DB::commit();
@@ -140,7 +141,7 @@ class CustomerOrderController extends Controller
             abort(403, 'Unauthorized access');
         }
 
-        $order->load(['invoice', 'invoice.shipment', 'invoice.payments']);
+        $order->load(['invoice', 'invoice.shipment', 'invoice.payments', 'document']);
 
         return view('invotrack-order.orders.show', compact('order'));
     }
