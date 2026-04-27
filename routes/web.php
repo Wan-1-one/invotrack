@@ -8,6 +8,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\DocumentController;
 
 // Customer Controllers
 use App\Http\Controllers\Customer\CustomerAuthController;
@@ -80,6 +81,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/reports/financial', [ExportController::class, 'financialSummary'])->name('reports.financial');
     Route::get('/export/orders', [ExportController::class, 'exportOrdersCSV'])->name('export.orders');
     Route::get('/export/invoices', [ExportController::class, 'exportInvoicesCSV'])->name('export.invoices');
+    
+    // Documents
+    Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
+    Route::post('/documents/{document}/send-to-customs', [DocumentController::class, 'sendToCustoms'])->name('documents.sendToCustoms');
 });
 
 Route::get('/', function () {
@@ -111,4 +116,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/shipments/{shipment}/track', [CustomerShipmentController::class, 'track'])->name('shipments.track');
     Route::get('/shipments/{shipment}/timeline', [CustomerShipmentController::class, 'timeline'])->name('shipments.timeline');
     Route::get('/shipments/{shipment}/report', [CustomerShipmentController::class, 'report'])->name('shipments.report');
+    
+    // Documents (view only for customers)
+    Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
 });

@@ -26,6 +26,11 @@ class CustomerPaymentController extends Controller
             return back()->with('error', 'This invoice is already paid.');
         }
 
+        // Check if customs document is approved
+        if ($invoice->order->document && $invoice->order->document->status !== 'approved') {
+            return back()->with('error', 'Payment can only be made after customs document is approved.');
+        }
+
         return view('customer.payments.create', compact('invoice'));
     }
 
@@ -43,11 +48,17 @@ class CustomerPaymentController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $invoice = Invoice::findOrFail($request->invoice_id);
+        $invoice = Invoice::with('order.document')->findOrFail($request->invoice_id);
 
         // Ensure customer can only pay their own invoices
         if (Auth::check() && $invoice->order->customer_id !== Auth::id()) {
             abort(403, 'Unauthorized access');
+        }
+
+        // Check if customs document is approved
+        if ($invoice->order->document && $invoice->order->document->status !== 'approved') {
+            return back()->withInput()
+                ->with('error', 'Payment can only be made after customs document is approved.');
         }
 
         // Check if payment amount exceeds invoice amount

@@ -30,6 +30,11 @@ class PaymentController extends Controller
             return back()->with('error', 'Payments can only be created for issued invoices.');
         }
 
+        // Check if customs document is approved
+        if ($invoice->order->document && $invoice->order->document->status !== 'approved') {
+            return back()->with('error', 'Payment can only be made after customs document is approved.');
+        }
+
         return view('invotrack.payments.create', compact('invoice'));
     }
 
@@ -47,10 +52,16 @@ class PaymentController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $invoice = Invoice::findOrFail($validated['invoice_id']);
+        $invoice = Invoice::with('order.document')->findOrFail($validated['invoice_id']);
         
         if ($invoice->isFullyPaid()) {
             return back()->with('error', 'This invoice is already fully paid.');
+        }
+
+        // Check if customs document is approved
+        if ($invoice->order->document && $invoice->order->document->status !== 'approved') {
+            return back()->withInput()
+                ->with('error', 'Payment can only be made after customs document is approved.');
         }
 
         try {

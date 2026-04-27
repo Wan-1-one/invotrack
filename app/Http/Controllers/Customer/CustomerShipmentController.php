@@ -14,7 +14,7 @@ class CustomerShipmentController extends Controller
      */
     public function track(Shipment $shipment)
     {
-        $shipment->load(['invoice.order', 'invoice.payments']);
+        $shipment->load(['invoice.order', 'invoice.payments', 'invoice.order.document']);
 
         return view('invotrack-order.shipments.track', compact('shipment'));
     }

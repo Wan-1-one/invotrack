@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
@@ -33,11 +34,36 @@ class Order extends Model
     ];
 
     /**
+     * The "booted" method of the model.
+     */
+    protected static function booted()
+    {
+        static::created(function ($order) {
+            // Auto-create customs document when order is created
+            $documentNumber = Document::generateDocumentNumber();
+            $document = Document::create([
+                'order_id' => $order->id,
+                'document_number' => $documentNumber,
+                'status' => 'pending',
+                'content' => Document::generateContentFromOrder($order, $documentNumber),
+            ]);
+        });
+    }
+
+    /**
      * Get the invoice associated with the order.
      */
     public function invoice()
     {
         return $this->hasOne(Invoice::class);
+    }
+
+    /**
+     * Get the customs document associated with the order.
+     */
+    public function document()
+    {
+        return $this->hasOne(Document::class);
     }
 
     /**

@@ -125,6 +125,32 @@
                 </div>
             </div>
 
+            <!-- Customs Approval -->
+            <div class="report-section mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <span class="w-2 h-6 bg-yellow-600 rounded mr-3"></span>
+                    CUSTOMS APPROVAL
+                </h3>
+                <div class="bg-gray-50 rounded-lg p-6 space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium">Document Number:</span>
+                        <span class="text-gray-900 font-semibold">{{ $shipment->invoice->order->document->document_number ?? 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium">Customs Status:</span>
+                        <span class="text-gray-900 font-semibold {{ $shipment->invoice->order->document->status === 'approved' ? 'text-green-600' : 'text-yellow-600' }}">
+                            {{ ucfirst($shipment->invoice->order->document->status ?? 'pending') }}
+                        </span>
+                    </div>
+                    @if($shipment->invoice->order->document && $shipment->invoice->order->document->approved_at)
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium">Approved Date:</span>
+                        <span class="text-gray-900">{{ $shipment->invoice->order->document->approved_at->format('F d, Y - H:i') }}</span>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Payment Details -->
             <div class="report-section mb-8">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">

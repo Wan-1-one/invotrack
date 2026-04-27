@@ -184,6 +184,45 @@
                     </div>
                 </div>
                 @endif
+
+                <!-- Customs Document Information -->
+                @if($shipment->invoice && $shipment->invoice->order && $shipment->invoice->order->document)
+                <div class="mt-6 pt-6 border-t">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Customs Document</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Document Number:</span>
+                                <span class="font-medium">{{ $shipment->invoice->order->document->document_number }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Status:</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {{ $shipment->invoice->order->document->status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                    {{ $shipment->invoice->order->document->formatted_status }}
+                                </span>
+                            </div>
+                            @if($shipment->invoice->order->document->approved_at)
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Approved At:</span>
+                                <span class="font-medium">{{ $shipment->invoice->order->document->approved_at->format('M d, Y H:i') }}</span>
+                            </div>
+                            @endif
+                        </div>
+                        <div class="space-y-3">
+                            <a href="{{ route('customer.documents.show', $shipment->invoice->order->document) }}" 
+                               class="w-full bg-purple-600 hover:bg-purple-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium block">
+                                👉 View Customs Document
+                            </a>
+                            @if($shipment->invoice->order->document->status === 'approved')
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                                <p class="text-green-800 text-sm font-medium">🔔 Your shipment document has been approved by customs</p>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
 
             <!-- Actions -->

@@ -165,6 +165,40 @@
         </div>
         @endif
 
+        <!-- Customs Document Information -->
+        @if($order->document)
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Customs Document</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Document Number:</span>
+                        <span class="font-medium">{{ $order->document->document_number }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Status:</span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {{ $order->document->status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                            {{ $order->document->formatted_status }}
+                        </span>
+                    </div>
+                    @if($order->document->approved_at)
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Approved At:</span>
+                        <span class="font-medium">{{ $order->document->approved_at->format('M d, Y H:i') }}</span>
+                    </div>
+                    @endif
+                </div>
+                <div class="space-y-3">
+                    <a href="{{ route('admin.documents.show', $order->document) }}" 
+                       class="w-full bg-purple-600 hover:bg-purple-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium block">
+                        👉 View Customs Document
+                    </a>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- Actions -->
         <div class="flex justify-end space-x-4">
             @if($order->status === 'pending' && !$order->invoice)
